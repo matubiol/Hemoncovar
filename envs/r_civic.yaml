@@ -1,0 +1,10 @@
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - r-base =4.4
+  - r-dplyr
+  - r-tidyr
+  - r-optparse
+  - r-writexl

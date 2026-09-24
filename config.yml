@@ -1,0 +1,116 @@
+# ==========================================
+# Project directories and scripts
+# ==========================================
+proj:
+  proj_dir: "/path/to/project/"
+  raw_dir: "/path/to/raw/data/"
+  intervals: "/path/to/intervals.bed"
+  ref_dir: "/path/to/reference/data/"
+  src_dir: "/path/to/src/"
+
+# Sample sheet (recommended). Tab-separated: sample, fastq_1, fastq_2 [, type, sex, purity]
+# Leave empty to auto-discover FASTQs in raw_dir (all lanes are kept).
+samplesheet: "config/samples.tsv"
+
+# ==========================================
+# Software
+# ==========================================
+# Snakemake wrappers release used by every 'wrapper:' rule. The conda environments
+# in envs/ (rules without a wrapper) pin the same tool versions as this release.
+# Offline HPC: clone https://github.com/snakemake/snakemake-wrappers at this tag and run
+# snakemake with --wrapper-prefix file:///path/to/snakemake-wrappers/
+wrapper_version: "v9.18.0"
+
+# ==========================================
+# Reference files (in ref_dir)
+# ==========================================
+refs:
+  # Reference fasta. Requires .fai, .dict and the bwa-mem2 index
+  # (.0123, .amb, .ann, .bwt.2bit.64, .pac) next to it.
+  genome: "Genomes/GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa"
+  gtf: "Genomes/GRCh37/Homo_sapiens.GRCh37.87.chr.gtf.gz"
+  dbsnp: "BaseRecalibration/dbsnp_138.b37.vcf.gz"
+  mills: "BaseRecalibration/Mills_and_1000G_gold_standard.indels.b37.vcf.gz"
+  high_conf: "BaseRecalibration/1000G_phase1.snps.high_confidence.b37.vcf.gz"
+  gnomad: "VariantCalling/gnomAD/af-only-gnomad.raw.sites.vcf.gz"
+  # Common biallelic SNPs (e.g. small_exac_common_3.vcf.gz), ideally restricted to the
+  # panel targets. Used by GetPileupSummaries (contamination) and CollectAllelicCounts (CNV).
+  common_snps: "VariantCalling/gnomAD/small_exac_common_3.b37.vcf.gz"
+  pon: "VariantCalling/gnomAD/Mutect2-exome-panel.vcf.gz"
+  clinvar: "VariantCalling/Annotation/clinvar.vcf.gz"
+  civic: "VariantCalling/Annotation/CIVIC_01-Apr-2026-AcceptedAndSubmittedClinicalEvidenceSummaries.tsv"
+  cyto: "VariantCalling/CNV/cytoBand.txt.gz"
+  # SnpEff data directory. The database 'snpeff_db' is downloaded here if missing.
+  snpeff_data: "VariantCalling/Annotation/snpEff_data"
+
+# ==========================================
+# Pipeline modules and scripts (in src_dir)
+# ==========================================
+smk:
+  qc: "Snakemake/01_RawReads_QC.smk"
+  ref: "Snakemake/00_RefPrep.smk"
+  align: "Snakemake/02_Alignment.smk"
+  align_umi: "Snakemake/02_Alignment_UMI.smk"
+  align_qc: "Snakemake/02_Alignment_QC.smk"
+  vc_common: "Snakemake/03_SmallVariants_Common.smk"
+  vc_gatk: "Snakemake/03_GATK_VC.smk"
+  vc_vardict: "Snakemake/03_VarDict.smk"
+  sv_manta: "Snakemake/04_Manta_SV.smk"
+  sv_lumpy: "Snakemake/04_Lumpy_SV.smk"
+  cnv_cnvkit: "Snakemake/05_CNVkit.smk"
+  cnv_gatk: "Snakemake/05_GATK_CNV.smk"
+  cnv_common: "Snakemake/05_CNV_Common.smk"
+pre:
+  harmonize_bed: "Pre_processing/00_Harmonize_BED.py"
+  normalize_umi: "Pre_processing/02_Normalize_UMI_Length.py"
+  report_genes: "Pre_processing/05_CNV_Report_Genes.py"
+post:
+  snpeff_report: "Post_processing/03_SnpEff_report.py"
+  SV_gene_ann: "Post_processing/04.1_Gene_Ann_SV.py"
+  SV_CIVIC_ann: "Post_processing/04.2_CIVic_Ann_SV.R"
+  CNV_gene_ann: "Post_processing/05_Gene_Ann_CNV.py"
+  CNV_pon_qc: "Post_processing/05_CNV_PoN_QC.py"
+  CNV_report: "Post_processing/06_CNV_Report.py"
+
+# ==========================================
+# Pipeline settings
+# ==========================================
+umi:
+  strat: "adjacency" # Options: "adjacency" (simplex), "duplex" or "none" (no UMI)
+  list: # List of UMI sequences (one per line)
+calls: ['sv'] # Options: "small", "sv", "cnv", "all"
+callers:
+  small: "both" # Options: "gatk", "vardict", "both"
+  sv: "both" # Options: "manta", "lumpy", "both"
+  cnv: "both" # Options: "cnvkit", "gatk_cnv", "both"
+mutect_mode: "moderate" # Options: "default", "moderate", "relaxed"
+snpeff_db: "GRCh37.75" # Options: "GRCh37.75", "GRCh38.115", "GRCh38.99", "hg19kg", "hg38kg", "testHg19ChrM" or a custom database
+# Small variant report filters
+vc_min_depth: 8               # Minimum number of alt-supporting reads (AD[1])
+vc_min_vaf: 0.0               # Minimum VAF (e.g. 0.02 = validated LoD of the HS2 panel)
+report_keep_filtered: false   # true = also report calls that did not PASS the caller filters
+# Structural variants
+sv_min_support: 3             # Minimum PE + SR supporting reads
+sv_pass_only: true            # Keep only PASS (or unfiltered '.') SV records
+sv_max_spanned_genes: 50      # DEL/DUP spanning more genes than this are collapsed into one row
+fusion_gene_panel:            # Optional: file with one gene symbol per line to filter SVs/fusions by
+# CNV
+pon_samples: ['Sample1', 'Sample2'] # Only used without sample sheet: samples treated as normals for the CNV PoNs
+cnv:
+  # Panel of normals (PoN):
+  #   "build":    built from the normal samples of this run (healthy donors, same panel and protocol).
+  #               Written as a reusable bundle to results/03_VariantCalling/03_CNVs/00_PanelOfNormals
+  #   "prebuilt": reuse a bundle built before (set pon_dir). Its BED must match the current one.
+  pon_mode: "build"
+  pon_dir: ""                   # prebuilt mode: path to a 00_PanelOfNormals bundle
+  pon_recommended_normals: 10   # a warning is printed below this number (hard minimum: 2)
+  pon_qc: true                  # leave-one-out evaluation of each normal (build mode, >= 3 normals)
+  interval_padding: 250         # GATK PreprocessIntervals padding
+  gatk_exclude_sex_chroms: true # exclude chrX/chrY from GATK CNV (mixed-sex PoN)
+  neutral_bounds: [0.9, 1.1]    # GATK copy-ratio bounds for neutral segments
+  min_probes: 10                # minimum bins/probes for a segment to be reported
+  arm_min_fraction: 0.5         # fraction of the segmented part of an arm that must be altered
+  loh_max_maf: 0.35             # max minor allele fraction for allelic imbalance / cnLOH (GATK)
+  loh_min_hets: 10              # min heterozygous SNPs supporting an allelic imbalance segment (GATK)
+  report_genes:                 # optional: one gene per line for the gene-level sheet
+                                # (default: protein-coding genes overlapping the panel targets)

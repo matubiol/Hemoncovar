@@ -1,0 +1,6 @@
+# One row per sample. fastq_1/fastq_2 accept several comma-separated files (one per lane).
+# type: tumor (default) | normal   sex: male | female | empty   purity: tumour fraction in (0,1] or empty
+sample	fastq_1	fastq_2	type	sex	purity
+AML_001	AML_001_S1_L001_R1_001.fastq.gz,AML_001_S1_L002_R1_001.fastq.gz	AML_001_S1_L001_R2_001.fastq.gz,AML_001_S1_L002_R2_001.fastq.gz	tumor	female	0.8
+Healthy_01	Healthy_01_S5_L001_R1_001.fastq.gz	Healthy_01_S5_L001_R2_001.fastq.gz	normal	male	
+Healthy_02	Healthy_02_S6_L001_R1_001.fastq.gz	Healthy_02_S6_L001_R2_001.fastq.gz	normal	female	
