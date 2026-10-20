@@ -94,21 +94,7 @@ mamba activate snakemake</code></pre>
 
 <h2> Reference & Data Preparation</h2>
 <p>
-  Before running the Snakemake workflow, you must download and index the GRCh37 human reference genome, resource bundles (dbSNP, Mills, gold standard indels), variant calling files (gnomAD panels), and clinical databases (CIViC, ClinVar).
-</p>
-<p>
-  A comprehensive reference builder script is included in the repository. To set up the infrastructure:
-</p>
-
-<ol>
-  <li>Open <code>src/BuildRef_GRCh37.sh</code> and configure your desired output directory (<code>OUTDIR</code>).</li>
-  <li>Run the script using an environment with access to cluster modules:</li>
-</ol>
-
-<pre><code>bash src/BuildRef_GRCh37.sh</code></pre>
-
-<p>
-  This script will automatically index the reference genome, build the sequence dictionaries, intersect and format the GTF annotations with gene names instead of Ensembl IDs, filter gnomAD to your targeted regions via <code>bcftools</code>, pre-process GATK CNV target intervals, and cache the <strong>CIViC Database</strong>.
+  Before running the Snakemake workflow, you must download and index the human reference genome, resource bundles (dbSNP, Mills, gold standard indels), variant calling files (gnomAD panels), and clinical databases (CIViC, ClinVar).
 </p>
 
 <hr />
