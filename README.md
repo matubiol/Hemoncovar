@@ -15,7 +15,7 @@
 
 <h2> Overview</h2>
 <p>
-  <code>Hemoncovar</code> is a high-throughput bioinformatic workflow for the analysis of targeted Next-Generation Sequencing (NGS) data in haemato-oncology (AML, CML, MPN, ALL, MDS). It was designed around the HealthinCode <em>Haematology OncoKit HS2</em> (89 genes, 26 fusion genes with intronic baits, genome-wide CNV backbone, dual UMIs; DNA from peripheral blood or bone marrow), but works with any capture panel given its BED file. Tumour-only somatic calling in blood and bone marrow brings specific challenges: no matched normal, subclonal mutations, difficult variants (FLT3-ITD, CALR, CEBPA, homopolymer indels) and recurrent fusions/rearrangements.
+  <code>Hemoncovar</code> is a high-throughput bioinformatic workflow for the analysis of targeted Next-Generation Sequencing (NGS) data in haemato-oncology (AML, CML, MPN, ALL, MDS). It was designed around the HealthInCode <em>Haematology OncoKit HS2</em> (89 genes, 26 fusion genes with intronic baits, genome-wide CNV backbone, dual UMIs; DNA from peripheral blood or bone marrow), but works with any capture panel given its BED file. Tumour-only somatic calling in blood and bone marrow brings specific challenges: no matched normal, subclonal mutations, difficult variants (FLT3-ITD, CALR, CEBPA, homopolymer indels) and recurrent fusions/rearrangements.
 </p>
 <p>
   This pipeline automates the entire process from reference infrastructure setup to fully annotated, clinical-grade variant reports by integrating state-of-the-art tools for small variants (SNVs/Indels), structural variations (SVs), and copy number alterations (CNVs).
