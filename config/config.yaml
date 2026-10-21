@@ -1,0 +1,21 @@
+# Snakemake
+executor: slurm
+jobs: 10
+keep-going: True
+printshellcmds: True
+reason:
+latency-wait: 60
+
+# Environment
+use-conda: True
+conda-frontend: "mamba"
+conda-prefix: "/path/to/conda_cache/cache_smk"
+use-envmodules: True
+use-apptainer: True
+apptainer-args: "--bind /path/to/bind:/path/in/containers"
+
+# Default resources for Slurm plugin
+default-resources:
+  slurm_account: "account_name"
+  slurm_partition: "partition_name"
+  mem_mb: 8000
