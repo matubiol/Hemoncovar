@@ -95,7 +95,7 @@ sv_pass_only: true            # Keep only PASS (or unfiltered '.') SV records
 sv_max_spanned_genes: 50      # DEL/DUP spanning more genes than this are collapsed into one row
 fusion_gene_panel:            # Optional: file with one gene symbol per line to filter SVs/fusions by
 # CNV
-pon_samples: ['Sample1', 'Sample2'] # Only used without sample sheet: samples treated as normals for the CNV PoNs
+pon_samples: # Only used without sample sheet: samples treated as normals for the CNV PoNs (e.g. ['Sample1', 'Sample2'])
 cnv:
   # Panel of normals (PoN):
   #   "build":    built from the normal samples of this run (healthy donors, same panel and protocol).
