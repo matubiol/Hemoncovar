@@ -15,7 +15,7 @@
 
 <h2> Overview</h2>
 <p>
-  <code>Hemoncovar</code> is a high-throughput bioinformatic workflow for the analysis of targeted Next-Generation Sequencing (NGS) data in haemato-oncology (AML, CML, MPN, ALL, MDS). It was designed around the HealthInCode <em>Haematology OncoKit HS2</em> (89 genes, 26 fusion genes with intronic baits, genome-wide CNV backbone, dual UMIs; DNA from peripheral blood or bone marrow), but works with any capture panel given its BED file. Tumour-only somatic calling in blood and bone marrow brings specific challenges: no matched normal, subclonal mutations, difficult variants (FLT3-ITD, CALR, CEBPA, homopolymer indels) and recurrent fusions/rearrangements.
+  <code>Hemoncovar</code> is a high-throughput bioinformatic workflow for the analysis of targeted Next-Generation Sequencing (NGS) data in haemato-oncology (AML, CML, MPN, ALL, MDS). It was designed around the HealthinCode <em>Haematology OncoKit HS2</em> (89 genes, 26 fusion genes with intronic baits, genome-wide CNV backbone, dual UMIs; DNA from peripheral blood or bone marrow), but works with any capture panel given its BED file. Tumour-only somatic calling in blood and bone marrow brings specific challenges: no matched normal, subclonal mutations, difficult variants (FLT3-ITD, CALR, CEBPA, homopolymer indels) and recurrent fusions/rearrangements.
 </p>
 <p>
   This pipeline automates the entire process from reference infrastructure setup to fully annotated, clinical-grade variant reports by integrating state-of-the-art tools for small variants (SNVs/Indels), structural variations (SVs), and copy number alterations (CNVs).
@@ -85,17 +85,50 @@ cd Hemoncovar</code></pre>
   <pre><code>mamba create -c conda-forge -c bioconda -n snakemake "snakemake>=8" snakemake-executor-plugin-slurm pandas
 mamba activate snakemake</code></pre>
 
-  <h3>3. (HPC without internet on compute nodes) Pre-build the environments</h3>
-  <pre><code>snakemake -s Snakefile.smk --configfile config.yml --sdm conda --conda-create-envs-only --conda-prefix /shared/snakemake-conda</code></pre>
-  <p>If the cluster has no access to GitHub, clone <code>https://github.com/snakemake/snakemake-wrappers</code>, check out the tag set in <code>wrapper_version</code> and add <code>--wrapper-prefix file:///path/to/snakemake-wrappers/</code>.</p>
+  <h3>3. (Optional) Pre-build the conda environments</h3>
+<p>
+  Snakemake creates the environments automatically on the first run.
+  To build them beforehand (e.g. to share them between users), run:
+</p>
+<pre><code>snakemake -s Snakefile.smk --configfile config.yml --sdm conda --conda-create-envs-only --conda-prefix /shared/snakemake-conda</code></pre>
+<p>
+  Use the same <code>--conda-prefix</code> in later runs.
+</p>
+<p>
+  If compute nodes have no access to GitHub, clone
+  <a href="https://github.com/snakemake/snakemake-wrappers">https://github.com/snakemake/snakemake-wrappers</a>,
+  check out the tag set in <code>wrapper_version</code> and add
+  <code>--wrapper-prefix file:///path/to/snakemake-wrappers/</code>.
+</p>
 </details>
 
 <hr />
 
-<h2> Reference & Data Preparation</h2>
+<h2> Reference & resources </h2>
 <p>
-  Before running the Snakemake workflow, you must download and index the human reference genome, resource bundles (dbSNP, Mills, gold standard indels), variant calling files (gnomAD panels), and clinical databases (CIViC, ClinVar).
+  Before running the Snakemake workflow, you must download and index the human reference genome, resource bundles (dbSNP, Mills, gold standard indels), variant calling files (gnomAD panels), and clinical databases (CIViC, ClinVar). As an example, the following sources were used for a GRCh37/b37 setup; equivalent files for other assemblies (e.g. GRCh38) can be obtained from the same providers:
 </p>
+<ul>
+  <li><strong>Human reference genome (GRCh37, Ensembl release 75):</strong> <a href="https://ftp.ensembl.org/pub/release-75/fasta/homo_sapiens/dna/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz">Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz</a></li>
+  <li><strong>Gene annotation (GTF, Ensembl GRCh37 release 87):</strong> <a href="https://ftp.ensembl.org/pub/grch37/current/gtf/homo_sapiens/Homo_sapiens.GRCh37.87.chr.gtf.gz">Homo_sapiens.GRCh37.87.chr.gtf.gz</a></li>
+  <li><strong>Base recalibration resource bundle</strong> (<a href="https://console.cloud.google.com/storage/browser/gcp-public-data--broad-references;tab=objects?prefix=&forceOnObjectsSortingFiltering=false">Broad Institute GATK resource bundle, b37</a>):
+    <ul>
+      <li>dbSNP: <a href="https://storage.googleapis.com/gcp-public-data--broad-references/hg19/v0/dbsnp_138.b37.vcf.gz">dbsnp_138.b37.vcf.gz</a> (<a href="https://storage.googleapis.com/gcp-public-data--broad-references/hg19/v0/dbsnp_135.b37.vcf.gz.tbi">.tbi</a>)</li>
+      <li>Mills and 1000G gold standard indels: <a href="https://storage.googleapis.com/gcp-public-data--broad-references/hg19/v0/Mills_and_1000G_gold_standard.indels.b37.vcf.gz">Mills_and_1000G_gold_standard.indels.b37.vcf.gz</a> (<a href="https://storage.googleapis.com/gcp-public-data--broad-references/hg19/v0/Mills_and_1000G_gold_standard.indels.b37.vcf.gz.tbi">.tbi</a>)</li>
+      <li>1000G phase 1 high-confidence SNPs: <a href="https://storage.googleapis.com/gcp-public-data--broad-references/hg19/v0/1000G_phase1.snps.high_confidence.b37.vcf.gz">1000G_phase1.snps.high_confidence.b37.vcf.gz</a> (<a href="https://storage.googleapis.com/gcp-public-data--broad-references/hg19/v0/1000G_phase1.snps.high_confidence.b37.vcf.gz.tbi">.tbi</a>)</li>
+    </ul>
+  </li>
+  <li><strong>Variant calling resources</strong> (<a href="https://console.cloud.google.com/storage/browser/gatk-best-practices/somatic-hg38;tab=objects?prefix=&forceOnObjectsSortingFiltering=false">GATK somatic best practices, b37</a>):
+    <ul>
+      <li>gnomAD allele-frequency-only sites: <a href="https://storage.googleapis.com/gatk-best-practices/somatic-b37/af-only-gnomad.raw.sites.vcf">af-only-gnomad.raw.sites.vcf</a> (<a href="https://storage.googleapis.com/gatk-best-practices/somatic-b37/af-only-gnomad.raw.sites.vcf.idx">.idx</a>)</li>
+      <li>Mutect2 exome panel of normals: <a href="https://storage.googleapis.com/gatk-best-practices/somatic-b37/Mutect2-exome-panel.vcf">Mutect2-exome-panel.vcf</a> (<a href="https://storage.googleapis.com/gatk-best-practices/somatic-b37/Mutect2-exome-panel.vcf.idx">.idx</a>)</li>
+      <li>Common germline variants (ExAC): <a href="https://storage.googleapis.com/gatk-best-practices/somatic-b37/small_exac_common_3.vcf">small_exac_common_3.vcf</a> (<a href="https://storage.googleapis.com/gatk-best-practices/somatic-b37/small_exac_common_3.vcf.idx">.idx</a>)</li>
+    </ul>
+  </li>
+  <li><strong>CIViC</strong> clinical evidence summaries (01-Apr-2026 release): <a href="https://civicdb.org/downloads/01-Apr-2026/01-Apr-2026-AcceptedAndSubmittedClinicalEvidenceSummaries.tsv">01-Apr-2026-AcceptedAndSubmittedClinicalEvidenceSummaries.tsv</a></li>
+  <li><strong>ClinVar</strong> (GRCh37): <a href="https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar.vcf.gz">clinvar.vcf.gz</a> (<a href="https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar.vcf.gz.tbi">.tbi</a>)</li>
+  <li><strong>Cytogenetic bands</strong> (UCSC hg19): <a href="https://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/cytoBand.txt.gz">cytoBand.txt.gz</a></li>
+</ul>
 
 <hr />
 
@@ -147,8 +180,16 @@ mamba activate snakemake</code></pre>
 
 <h3>Execution</h3>
 <p>To run the pipeline on a Slurm cluster:</p>
-<pre><code>snakemake -s Snakefile.smk --configfile config.yml --profile slurm --sdm conda --conda-prefix /shared/snakemake-conda</code></pre>
-<p>Slurm profiles can be configured in <code>config/slurm/</code> to specify partition, account, memory, and other cluster-specific parameters. Other options can be specified as needed. Find more information in the <a href="https://snakemake.readthedocs.io/en/stable/executing/cli.html#defining-global-profiles">Snakemake documentation</a>.</p>
+<pre><code>snakemake -s Snakefile.smk --configfile config.yml --profile slurm</code></pre>
+<p>An example Snakemake profile is provided in <code>config/config.yaml</code>. It sets the Slurm executor, the number of parallel jobs, the software deployment methods (Conda, environment modules and Apptainer) and the default cluster resources. Before running the pipeline, adapt the following fields to your cluster:</p>
+<ul>
+  <li><code>slurm_account</code> and <code>slurm_partition</code>: your Slurm account and partition.</li>
+  <li><code>mem_mb</code>: default memory per job (in MB).</li>
+  <li><code>jobs</code>: maximum number of jobs submitted simultaneously.</li>
+  <li><code>conda-prefix</code>: shared directory where Conda environments will be created and cached.</li>
+  <li><code>apptainer-args</code>: paths to bind inside the containers.</li>
+</ul>
+<p>Any option defined in the profile can be overridden from the command line (e.g. <code>--jobs 20</code>). Other options can be added as needed. Find more information in the <a href="https://snakemake.readthedocs.io/en/stable/executing/cli.html#profiles">Snakemake documentation</a>.</p>
 
 <hr />
 
