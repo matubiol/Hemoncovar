@@ -9,3 +9,4 @@ dependencies:
   - pysam >=0.22
   - pyranges >=0.1,<1
   - openpyxl
+  - pytz
